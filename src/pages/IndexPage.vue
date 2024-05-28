@@ -186,16 +186,18 @@ async function handleClickOption(btn: IbtnType, data: IdataType) {
 async function addList() {
   // console.log(tempData.value);
 
+  // 來不及用 validator 判斷
+
+  if (tempData.value.name.length === 0) {
+    return $q.notify('名字不可為空');
+  }
+
   if (
     isNaN(+tempData.value.age) ||
     +tempData.value.age <= 0 ||
     !Number.isInteger(+tempData.value.age)
   ) {
-    return;
-  }
-
-  if (tempData.value.name.length === 0) {
-    return;
+    return $q.notify('年齡錯誤');
   }
 
   if (tempData.value.id.length > 0) {
