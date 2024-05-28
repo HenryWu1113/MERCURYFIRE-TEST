@@ -83,6 +83,11 @@
 import axios from 'axios';
 import { QTableProps } from 'quasar';
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
+
+const $q = useQuasar();
+
+console.log($q.dialog);
 
 const api = axios.create({
   baseURL: 'https://dahua.metcfire.com.tw/api/CRUDTest',
@@ -109,18 +114,14 @@ const tableConfig = ref([
     name: 'name',
     field: 'name',
     align: 'left',
-    edit: 'edit',
-    modelName: 'modelName',
-    modelAge: 'modelAge',
+    sortable: true,
   },
   {
     label: '年齡',
     name: 'age',
     field: 'age',
     align: 'left',
-    edit: 'edit',
-    modelName: 'modelName',
-    modelAge: 'modelAge',
+    sortable: true,
   },
 ]);
 const tableButtons = ref([
@@ -128,13 +129,11 @@ const tableButtons = ref([
     label: '編輯',
     icon: 'edit',
     status: 'edit',
-    edit: false,
   },
   {
     label: '刪除',
     icon: 'delete',
     status: 'delete',
-    edit: false,
   },
   // {
   //   label: '確認',
@@ -170,20 +169,25 @@ async function handleClickOption(btn: IbtnType, data: IdataType) {
 
   // 刪除
   if (btn.status === 'delete') {
-    await api.delete(`/${data.id}`);
-    getList();
-  }
-
-  // 點編輯
-  if (btn.status === 'edit') {
-    console.log('edit');
-    tempData.value = blockData.value[idx];
-  }
-
-  // 確認編輯
-  if (btn.status === 'check') {
-    // await api.patch('/', { ...data, age: 1234 });
-    // getList();
+    $q.dialog({
+      title: 'Confirm',
+      message: 'Would you like to turn on the wifi?',
+      cancel: true,
+      persistent: true,
+    })
+      .onOk(async () => {
+        await api.delete(`/${data.id}`);
+        getList();
+      })
+      .onOk(() => {
+        // console.log('>>>> second OK catcher')
+      })
+      .onCancel(() => {
+        // console.log('>>>> Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      });
   }
 }
 
@@ -191,9 +195,11 @@ async function handleClickOption(btn: IbtnType, data: IdataType) {
 async function addList() {
   console.log(tempData.value);
 
-  console.log(!isNaN(+tempData.value.age));
-  console.log(+tempData.value.age > 0);
-  if (isNaN(+tempData.value.age) || +tempData.value.age <= 0) {
+  if (
+    isNaN(+tempData.value.age) ||
+    +tempData.value.age <= 0 ||
+    !Number.isInteger(+tempData.value.age)
+  ) {
     return;
   }
 
