@@ -4,7 +4,9 @@
       <div class="q-mb-xl">
         <q-input v-model="tempData.name" label="姓名" />
         <q-input v-model="tempData.age" label="年齡" />
-        <q-btn color="primary" class="q-mt-md">新增</q-btn>
+        <q-btn color="primary" class="q-mt-md" @click="addList()">{{
+          tempData.id.length ? '修改' : '新增'
+        }}</q-btn>
       </div>
 
       <q-table
@@ -81,29 +83,44 @@
 import axios from 'axios';
 import { QTableProps } from 'quasar';
 import { ref } from 'vue';
-interface btnType {
+
+const api = axios.create({
+  baseURL: 'https://dahua.metcfire.com.tw/api/CRUDTest',
+});
+
+interface IbtnType {
   label: string;
   icon: string;
   status: string;
 }
-const blockData = ref([
-  {
-    name: 'test',
-    age: 25,
-  },
-]);
+
+interface IdataType {
+  id: string;
+  name: string;
+  age: string;
+}
+
+/** 列表資料 */
+const blockData = ref<IdataType[]>([]);
+
 const tableConfig = ref([
   {
     label: '姓名',
     name: 'name',
     field: 'name',
     align: 'left',
+    edit: 'edit',
+    modelName: 'modelName',
+    modelAge: 'modelAge',
   },
   {
     label: '年齡',
     name: 'age',
     field: 'age',
     align: 'left',
+    edit: 'edit',
+    modelName: 'modelName',
+    modelAge: 'modelAge',
   },
 ]);
 const tableButtons = ref([
@@ -111,21 +128,105 @@ const tableButtons = ref([
     label: '編輯',
     icon: 'edit',
     status: 'edit',
+    edit: false,
   },
   {
     label: '刪除',
     icon: 'delete',
     status: 'delete',
+    edit: false,
   },
+  // {
+  //   label: '確認',
+  //   icon: 'check',
+  //   status: 'check',
+  //   edit: true,
+  // },
+  // {
+  //   label: '取消',
+  //   icon: 'cancel',
+  //   status: 'cancel',
+  //   edit: true,
+  // },
 ]);
 
+/** 輸入框綁定 */
 const tempData = ref({
+  id: '',
   name: '',
   age: '',
 });
-function handleClickOption(btn, data) {
-  // ...
+
+/**
+ * 更新或刪除
+ * @param btn 點擊的按鈕資訊
+ * @param data 該行資訊
+ */
+async function handleClickOption(btn: IbtnType, data: IdataType) {
+  console.log(btn, data);
+
+  const idx = blockData.value.findIndex((item) => item.id === data.id);
+  if (idx === -1) return;
+
+  // 刪除
+  if (btn.status === 'delete') {
+    await api.delete(`/${data.id}`);
+    getList();
+  }
+
+  // 點編輯
+  if (btn.status === 'edit') {
+    console.log('edit');
+    tempData.value = blockData.value[idx];
+  }
+
+  // 確認編輯
+  if (btn.status === 'check') {
+    // await api.patch('/', { ...data, age: 1234 });
+    // getList();
+  }
 }
+
+/** 新增 */
+async function addList() {
+  console.log(tempData.value);
+
+  console.log(!isNaN(+tempData.value.age));
+  console.log(+tempData.value.age > 0);
+  if (isNaN(+tempData.value.age) || +tempData.value.age <= 0) {
+    return;
+  }
+
+  if (tempData.value.name.length === 0) {
+    return;
+  }
+
+  if (tempData.value.id.length > 0) {
+    await api.patch('/', tempData.value);
+  } else {
+    await api.post('/', tempData.value);
+  }
+  tempData.value = {
+    id: '',
+    name: '',
+    age: '',
+  };
+  getList();
+}
+
+/** 取列表 */
+async function getList() {
+  const { data }: { data: IdataType[] } = await api.get('/a');
+  console.log(data);
+  blockData.value = data;
+  console.log(blockData.value);
+}
+getList();
+
+const filterTableButtons = (edit: boolean) => {
+  console.log(edit);
+  return tableButtons.value.filter((item) => item.edit === edit);
+};
 </script>
 
 <style lang="scss" scoped>
