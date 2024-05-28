@@ -87,7 +87,7 @@ import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 
-console.log($q.dialog);
+// console.log($q.dialog);
 
 const api = axios.create({
   baseURL: 'https://dahua.metcfire.com.tw/api/CRUDTest',
@@ -108,6 +108,7 @@ interface IdataType {
 /** 列表資料 */
 const blockData = ref<IdataType[]>([]);
 
+/** 表格設定 */
 const tableConfig = ref([
   {
     label: '姓名',
@@ -124,6 +125,8 @@ const tableConfig = ref([
     sortable: true,
   },
 ]);
+
+/** 表格按鈕 */
 const tableButtons = ref([
   {
     label: '編輯',
@@ -135,18 +138,6 @@ const tableButtons = ref([
     icon: 'delete',
     status: 'delete',
   },
-  // {
-  //   label: '確認',
-  //   icon: 'check',
-  //   status: 'check',
-  //   edit: true,
-  // },
-  // {
-  //   label: '取消',
-  //   icon: 'cancel',
-  //   status: 'cancel',
-  //   edit: true,
-  // },
 ]);
 
 /** 輸入框綁定 */
@@ -162,7 +153,7 @@ const tempData = ref({
  * @param data 該行資訊
  */
 async function handleClickOption(btn: IbtnType, data: IdataType) {
-  console.log(btn, data);
+  // console.log(btn, data);
 
   const idx = blockData.value.findIndex((item) => item.id === data.id);
   if (idx === -1) return;
@@ -170,8 +161,8 @@ async function handleClickOption(btn: IbtnType, data: IdataType) {
   // 刪除
   if (btn.status === 'delete') {
     $q.dialog({
-      title: 'Confirm',
-      message: 'Would you like to turn on the wifi?',
+      title: '提示',
+      message: '是否確定刪除該筆資料?',
       cancel: true,
       persistent: true,
     })
@@ -193,7 +184,7 @@ async function handleClickOption(btn: IbtnType, data: IdataType) {
 
 /** 新增 */
 async function addList() {
-  console.log(tempData.value);
+  // console.log(tempData.value);
 
   if (
     isNaN(+tempData.value.age) ||
@@ -228,11 +219,6 @@ async function getList() {
   console.log(blockData.value);
 }
 getList();
-
-const filterTableButtons = (edit: boolean) => {
-  console.log(edit);
-  return tableButtons.value.filter((item) => item.edit === edit);
-};
 </script>
 
 <style lang="scss" scoped>
